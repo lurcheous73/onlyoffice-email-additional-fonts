@@ -27,8 +27,10 @@ On the Docker host running ONLYOFFICE Workspace / Community Server:
 ```bash
 git clone https://github.com/lurcheous73/onlyoffice-email-additional-fonts.git
 cd onlyoffice-email-additional-fonts
-sudo ./install.sh
+sudo bash ./install.sh
 ```
+
+Use `bash ./install.sh` rather than changing the Git checkout's executable bit with `chmod +x`; this keeps the checkout clean for future `git pull --ff-only` updates.
 
 Then copy your fonts into the drop directory:
 
@@ -38,6 +40,17 @@ sudo onlyoffice-email-additional-fonts
 ```
 
 A systemd path unit watches the font directory and a 15-minute timer revalidates the patch. This allows the custom font layer to be reapplied after a Community Server container update or recreation.
+
+## Update an existing checkout
+
+```bash
+cd /path/to/onlyoffice-email-additional-fonts
+git restore install.sh status.sh uninstall.sh lib/update-fonts.sh 2>/dev/null || true
+git pull --ff-only
+sudo bash ./install.sh
+```
+
+The font drop directory is outside the Git source checkout, so updating or restoring the checkout does not remove administrator-supplied fonts from `/opt/onlyoffice-email-additional-fonts/fonts`.
 
 ## What it updates
 
