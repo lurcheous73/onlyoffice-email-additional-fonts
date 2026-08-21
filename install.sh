@@ -57,7 +57,9 @@ install -m 0644 "$ROOT/systemd/onlyoffice-email-additional-fonts.path" /etc/syst
 install -m 0644 "$ROOT/systemd/onlyoffice-email-additional-fonts.timer" /etc/systemd/system/onlyoffice-email-additional-fonts.timer
 
 systemctl daemon-reload
-systemctl enable --now onlyoffice-email-additional-fonts.path onlyoffice-email-additional-fonts.timer
+systemctl enable onlyoffice-email-additional-fonts.path onlyoffice-email-additional-fonts.timer >/dev/null
+# Restart both units so an old recurring timer definition cannot remain scheduled.
+systemctl restart onlyoffice-email-additional-fonts.path onlyoffice-email-additional-fonts.timer
 
 cat <<EOFMSG
 ============================================================
@@ -94,7 +96,8 @@ Configuration:
 
   /etc/onlyoffice-email-additional-fonts.conf
 
-The 15-minute timer also re-checks the patch after ONLYOFFICE container updates/recreation.
+A one-shot boot timer validates the patch once after boot. It does NOT run every 15 minutes.
+The path watcher handles actual font/alias changes.
 ============================================================
 EOFMSG
 
