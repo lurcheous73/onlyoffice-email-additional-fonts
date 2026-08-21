@@ -160,10 +160,21 @@ ALIAS_COUNT="$(wc -l < "$ALIASES_TMP")"
 MAIL_ENTRY_COUNT="$((FAMILY_COUNT + ALIAS_COUNT))"
 [[ "$FONT_COUNT" -gt 0 ]] || fail "Could not stage any usable fonts."
 
-FONT_HASH="$(find "$STAGE/fonts" -type f -print0 | sort -z | xargs -0 sha256sum; sha256sum "$CSS_TMP"; cat "$FAMILIES_TMP" | sha256sum | awk '{print $1}')"
-FONT_HASH="$(printf '%s\n' "$FONT_HASH" | sha256sum | awk '{print $1}')"
-MAIL_HASH="$(printf '%s\n' "$FONT_HASH"; sha256sum "$ALIASES_TMP")"
-MAIL_HASH="$(printf '%s\n' "$MAIL_HASH" | sha256sum | awk '{print $1}')"
+# Build stable hashes from relative filenames and file contents only.
+# Do not include the random mktemp staging path, otherwise every validation
+# looks like a change and needlessly restarts Community Server.
+FONT_HASH="$({
+    cd "$STAGE/fonts"
+    while IFS= read -r -d '' f; do
+        printf '%s\0' "$f"
+        sha256sum "$f" | awk '{print $1}'
+    done < <(find . -type f -print0 | sort -z)
+    sha256sum "$CSS_TMP" | awk '{print $1}'
+    sha256sum "$FAMILIES_TMP" | awk '{print $1}'
+} | sha256sum | awk '{print $1}')"
+
+ALIAS_HASH="$(sha256sum "$ALIASES_TMP" | awk '{print $1}')"
+MAIL_HASH="$(printf '%s\n%s\n' "$FONT_HASH" "$ALIAS_HASH" | sha256sum | awk '{print $1}')"
 OLD_HASH="$(cat "$STATE_DIR/mail.hash" 2>/dev/null || true)"
 
 # Always validate/repair the CKEditor patch, even when the source font set is unchanged.
