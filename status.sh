@@ -4,6 +4,7 @@ CONFIG_FILE="/etc/onlyoffice-email-additional-fonts.conf"
 [[ -r "$CONFIG_FILE" ]] && . "$CONFIG_FILE"
 FONT_DIR="${FONT_DIR:-/opt/onlyoffice-email-additional-fonts/fonts}"
 STATE_DIR="${STATE_DIR:-/var/lib/onlyoffice-email-additional-fonts}"
+ALIAS_FILE="${ALIAS_FILE:-/etc/onlyoffice-email-additional-fonts.aliases}"
 
 echo "============================================================"
 echo " ONLYOFFICE EMAIL ADDITIONAL FONTS — STATUS"
@@ -12,6 +13,23 @@ echo "Font drop directory: $FONT_DIR"
 echo "Supported: .ttf .otf .woff .woff2"
 printf 'Source font files: '
 find "$FONT_DIR" -type f \( -iname '*.ttf' -o -iname '*.otf' -o -iname '*.woff' -o -iname '*.woff2' \) 2>/dev/null | wc -l
+
+echo "Alias file: $ALIAS_FILE"
+printf 'Active Mail aliases: '
+if [[ -r "$ALIAS_FILE" ]]; then
+    awk '
+        /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
+        index($0,"=") { count++ }
+        END { print count+0 }
+    ' "$ALIAS_FILE"
+else
+    echo 0
+fi
+
+if [[ -r "$ALIAS_FILE" ]] && grep -qE '^[[:space:]]*[^#[:space:]].*=' "$ALIAS_FILE"; then
+    echo "Configured aliases:"
+    grep -E '^[[:space:]]*[^#[:space:]].*=' "$ALIAS_FILE" | sed 's/^/  /'
+fi
 
 echo
 COMM="$(docker ps --format '{{.Names}}|{{.Image}}' | awk -F'|' '{line=tolower($0)} line ~ /communityserver|community-server/ {print $1; exit}')"
