@@ -30,7 +30,11 @@ PY
     docker restart --timeout 30 "$COMM" >/dev/null || true
 fi
 
-rm -f /usr/local/sbin/onlyoffice-email-additional-fonts /usr/local/sbin/onlyoffice-email-additional-fonts-status
+rm -f \
+    /usr/local/sbin/onlyoffice-email-additional-fonts \
+    /usr/local/sbin/onlyoffice-email-additional-fonts-status \
+    /usr/local/bin/onlyoffice-email-additional-fonts \
+    /usr/local/bin/onlyoffice-email-additional-fonts-status
 
 echo "Patch removed. Font source directory was NOT deleted."
 echo "If you also want to remove it manually: /opt/onlyoffice-email-additional-fonts/fonts"
