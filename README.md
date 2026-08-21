@@ -61,13 +61,13 @@ sudo cp /path/to/fonts/*.ttf /opt/onlyoffice-email-additional-fonts/fonts/
 sudo onlyoffice-email-additional-fonts
 ```
 
-A systemd path unit watches the font directory and alias file, and a 15-minute timer revalidates the patch. This allows the custom font layer to be reapplied after a Community Server container update or recreation.
+A systemd path unit watches the font directory and alias file. A separate timer validates the patch **once after boot**; it does not run on a repeating 15-minute schedule.
 
 ## Update an existing checkout
 
 ```bash
 cd /path/to/onlyoffice-email-additional-fonts
-git restore install.sh status.sh uninstall.sh lib/update-fonts.sh 2>/dev/null || true
+git restore install.sh status.sh uninstall.sh lib/update-fonts.sh systemd/onlyoffice-email-additional-fonts.timer 2>/dev/null || true
 git pull --ff-only
 sudo bash ./install.sh
 ```
@@ -86,8 +86,9 @@ By default the updater:
 6. Copies the fonts into the Community Server CKEditor web tree.
 7. Adds the real families and optional display aliases to CKEditor's `config.font_names` while retaining the stock font list.
 8. Adds the generated stylesheet to `config.contentsCss`, including a cache-busting version.
-9. Restarts Community Server only when the generated font set/config actually changes.
-10. When Document Server is detected (`SYNC_DOCUMENT_SERVER="auto"`), copies the same real font files into Document Server and runs `documentserver-generate-allfonts.sh` when the font set changes. Display aliases affect Mail only and do not trigger unnecessary Document Server font regeneration.
+9. Uses stable content hashes so an unchanged font set does not look changed on every validation.
+10. Restarts Community Server only when the generated font set/config actually changes.
+11. When Document Server is detected (`SYNC_DOCUMENT_SERVER="auto"`), copies the same real font files into Document Server and runs `documentserver-generate-allfonts.sh` when the font set changes. Display aliases affect Mail only and do not trigger unnecessary Document Server font regeneration.
 
 Mail's standard toolbar already contains the `Font` and `FontSize` controls; this project extends the catalogue behind that control rather than replacing the Mail toolbar.
 
@@ -138,6 +139,6 @@ The uninstaller removes only this project's marked CKEditor configuration block 
 ## Notes
 
 - Designed for the Docker-based ONLYOFFICE Workspace / Community Server layout where CKEditor lives at `/var/www/onlyoffice/WebStudio/UserControls/Common/ckeditor` inside Community Server.
-- The updater is idempotent and uses a lock to prevent overlapping timer/path runs.
+- The updater is idempotent and uses a lock to prevent overlapping path/timer runs.
 - An original CKEditor config is backed up by checksum before the first patch of a stock config.
 - Do not commit proprietary/licensed font binaries to this public repository unless redistribution is permitted by their licence.
