@@ -1,0 +1,3 @@
+# Local administrator-supplied fonts are deliberately not committed.
+fonts/*
+!fonts/README.md
