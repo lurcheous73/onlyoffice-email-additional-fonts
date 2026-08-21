@@ -11,9 +11,11 @@ INSTALL_ROOT="/opt/onlyoffice-email-additional-fonts"
 FONT_DIR="$INSTALL_ROOT/fonts"
 STATE_DIR="/var/lib/onlyoffice-email-additional-fonts"
 
-mkdir -p "$INSTALL_ROOT" "$FONT_DIR" "$STATE_DIR" /etc/systemd/system
+mkdir -p "$INSTALL_ROOT" "$FONT_DIR" "$STATE_DIR" /etc/systemd/system /usr/local/bin /usr/local/sbin
 install -m 0755 "$ROOT/lib/update-fonts.sh" /usr/local/sbin/onlyoffice-email-additional-fonts
 install -m 0755 "$ROOT/status.sh" /usr/local/sbin/onlyoffice-email-additional-fonts-status
+ln -sfn /usr/local/sbin/onlyoffice-email-additional-fonts /usr/local/bin/onlyoffice-email-additional-fonts
+ln -sfn /usr/local/sbin/onlyoffice-email-additional-fonts-status /usr/local/bin/onlyoffice-email-additional-fonts-status
 if [[ "$(readlink -f "$ROOT/uninstall.sh")" != "$(readlink -f "$INSTALL_ROOT/uninstall.sh" 2>/dev/null || true)" ]]; then
     install -m 0755 "$ROOT/uninstall.sh" "$INSTALL_ROOT/uninstall.sh"
 fi
