@@ -1,8 +1,9 @@
 [Unit]
-Description=Watch ONLYOFFICE additional font drop directory
+Description=Watch ONLYOFFICE additional font drop directory and aliases
 
 [Path]
 PathChanged=/opt/onlyoffice-email-additional-fonts/fonts
+PathChanged=/etc/onlyoffice-email-additional-fonts.aliases
 Unit=onlyoffice-email-additional-fonts.service
 
 [Install]
