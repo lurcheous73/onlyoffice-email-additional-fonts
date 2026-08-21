@@ -20,6 +20,28 @@ Supported formats:
 
 Subdirectories are allowed. Every supported file under the directory is scanned and the Mail font list/CSS is regenerated automatically.
 
+## Optional Mail display aliases
+
+If you need a familiar name in the Mail font menu to point at an installed equivalent family, use:
+
+```text
+/etc/onlyoffice-email-additional-fonts.aliases
+```
+
+Format:
+
+```text
+Display Name=Real Font Family
+```
+
+Example:
+
+```text
+Chalkboard=Cantarell
+```
+
+That makes `Chalkboard` appear in CKEditor's Mail font menu while applying the installed `Cantarell` family. It does not rename or modify the font files, and aliases are optional. The systemd watcher also watches the alias file, so changes are applied automatically.
+
 ## Install
 
 On the Docker host running ONLYOFFICE Workspace / Community Server:
@@ -39,7 +61,7 @@ sudo cp /path/to/fonts/*.ttf /opt/onlyoffice-email-additional-fonts/fonts/
 sudo onlyoffice-email-additional-fonts
 ```
 
-A systemd path unit watches the font directory and a 15-minute timer revalidates the patch. This allows the custom font layer to be reapplied after a Community Server container update or recreation.
+A systemd path unit watches the font directory and alias file, and a 15-minute timer revalidates the patch. This allows the custom font layer to be reapplied after a Community Server container update or recreation.
 
 ## Update an existing checkout
 
@@ -58,13 +80,14 @@ By default the updater:
 
 1. Detects the running ONLYOFFICE Community Server container.
 2. Scans every supported font in the font drop directory.
-3. Uses the real font family name where `fontconfig` can identify it; it does not create arbitrary family aliases.
-4. Generates browser `@font-face` CSS.
-5. Copies the fonts into the Community Server CKEditor web tree.
-6. Adds the families to CKEditor's `config.font_names` while retaining the stock font list.
-7. Adds the generated stylesheet to `config.contentsCss`, including a cache-busting version.
-8. Restarts Community Server only when the generated font set/config actually changes.
-9. When Document Server is detected (`SYNC_DOCUMENT_SERVER="auto"`), copies the same font set into Document Server and runs `documentserver-generate-allfonts.sh` when the font set changes.
+3. Uses the real font family name where `fontconfig` can identify it.
+4. Reads optional administrator-defined Mail display aliases from `/etc/onlyoffice-email-additional-fonts.aliases`.
+5. Generates browser `@font-face` CSS.
+6. Copies the fonts into the Community Server CKEditor web tree.
+7. Adds the real families and optional display aliases to CKEditor's `config.font_names` while retaining the stock font list.
+8. Adds the generated stylesheet to `config.contentsCss`, including a cache-busting version.
+9. Restarts Community Server only when the generated font set/config actually changes.
+10. When Document Server is detected (`SYNC_DOCUMENT_SERVER="auto"`), copies the same real font files into Document Server and runs `documentserver-generate-allfonts.sh` when the font set changes. Display aliases affect Mail only and do not trigger unnecessary Document Server font regeneration.
 
 Mail's standard toolbar already contains the `Font` and `FontSize` controls; this project extends the catalogue behind that control rather than replacing the Mail toolbar.
 
@@ -80,7 +103,7 @@ sudo onlyoffice-email-additional-fonts
 sudo onlyoffice-email-additional-fonts-status
 ```
 
-The status output always shows the configured font drop directory, source font count, detected containers, CKEditor patch state, and watcher/timer state.
+The status output shows the configured font drop directory, source font count, alias file and active aliases, detected containers, CKEditor patch state, and watcher/timer state.
 
 ## Configuration
 
@@ -93,6 +116,7 @@ Default configuration:
 ```bash
 FONT_DIR="/opt/onlyoffice-email-additional-fonts/fonts"
 STATE_DIR="/var/lib/onlyoffice-email-additional-fonts"
+ALIAS_FILE="/etc/onlyoffice-email-additional-fonts.aliases"
 SYNC_DOCUMENT_SERVER="auto"
 RESTART_COMMUNITY_SERVER="1"
 ```
