@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch ONLYOFFICE additional font drop directory
+
+[Path]
+PathChanged=/opt/onlyoffice-email-additional-fonts/fonts
+Unit=onlyoffice-email-additional-fonts.service
+
+[Install]
+WantedBy=multi-user.target
